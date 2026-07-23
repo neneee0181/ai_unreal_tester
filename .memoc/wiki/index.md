@@ -22,7 +22,7 @@ Persistent LLM-maintained wiki hub.
 
 ## Project Pages
 
-_None yet. Link implementation pages from [project/README.md](project/README.md)._
+- [개발 플랜 (plan.md)](project/plan.md) — 전체 개발 플랜 v0.1.0. 목표/결정/아키텍처/Phase/프레임워크 레이어.
 
 ## Knowledge Pages
 

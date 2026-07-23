@@ -2,8 +2,8 @@
 memoc: true
 type: core
 scope: project-memory
-created: 2026-07-23T10:38:31
-updated: 2026-07-23T10:38:31
+created: 2026-07-23T11:13:46
+updated: 2026-07-23T11:13:46
 status: active
 tags:
   - memoc
@@ -11,17 +11,13 @@ tags:
 ---
 # Activity
 
-Shared activity index for memoc work logs.
+Generated shared activity index for memoc work logs.
 
-## How To Use
-
-- Use `memoc work "<title>"` after meaningful work so shared repos get conflict-light per-actor records.
-- Keep this file short; detailed work belongs in [worklog](worklog/README.md).
-- Actor is detected from `MEMOC_ACTOR`, `.memoc/local/actor`, git config, git email, or OS user.
+Last generated: 2026-07-23T11:13:46
 
 ## Recent Work
 
-_None yet._
+- [PLAN.md v0.1.0 작성 + memoc 메모리 초기 확정](worklog/neneee0181/2026-07/20260723T1113-plan-md-v0-1-0-memoc.md) — neneee0181 active.
 
 ## Related
 

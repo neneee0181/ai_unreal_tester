@@ -2,8 +2,8 @@
 memoc: true
 type: wiki
 scope: project-memory
-created: 2026-07-23T10:38:31
-updated: 2026-07-23T10:38:31
+created: 2026-07-23T11:47:31
+updated: 2026-07-23T11:47:31
 status: generated
 confidence: medium
 tags:
@@ -14,7 +14,7 @@ tags:
 ---
 # Wiki Lint
 
-Last checked: 2026-07-23T10:38:31
+Last checked: 2026-07-23T11:47:31
 
 ## Graph Checks
 
@@ -29,11 +29,11 @@ _No issues found._
 
 ## Warnings
 
-_None._
+- .memoc/wiki/project/plan.md: missing ## Related section
 
 ## Related
 
-- [Knowledge Wiki](README.md)
+- [Wiki Index](../index.md)
 - [Sources](sources.md)
 - [Topics](topics/README.md)
 - [Open Questions](questions.md)

@@ -18,7 +18,7 @@ Implementation docs for this repository.
 
 ## Project Pages
 
-_None yet. Add pages like `architecture.md`, `auth.md`, `gateway.md`, `deployment.md`, or `ui-dashboard.md`._
+- [plan.md](plan.md) — 전체 개발 플랜 v0.1.0 (목표/결정 D1~D10/아키텍처/Phase 0~10/프레임워크 레이어 L1~7).
 
 ## How To Use
 

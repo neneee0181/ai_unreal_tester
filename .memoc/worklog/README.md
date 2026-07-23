@@ -2,8 +2,8 @@
 memoc: true
 type: worklog
 scope: project-memory
-created: 2026-07-23T10:38:31
-updated: 2026-07-23T10:38:31
+created: 2026-07-23T11:13:46
+updated: 2026-07-23T11:13:46
 status: active
 tags:
   - memoc
@@ -11,13 +11,9 @@ tags:
 ---
 # Worklog
 
-Conflict-light per-actor work records.
+Generated index of conflict-light per-actor work records.
 
-## Rules
-
-- Prefer creating new worklog files over appending shared core memory files.
-- Keep `session-summary.md` as the tiny current snapshot.
-- Put detailed completed work here; put only team-critical unfinished risk in `04-handoff.md`.
+Last generated: 2026-07-23T11:13:46
 
 ## Layout
 
@@ -25,6 +21,11 @@ Conflict-light per-actor work records.
 worklog/<actor>/YYYY-MM/YYYYMMDDTHHMM-title.md
 ```
 
+## Rules
+
+- Prefer creating new worklog files over appending shared core memory files.
+- Keep worklog entries short: 1-3 summary bullets, key files, verification.
+
 ## Recent Work
 
-_None yet._
+- [PLAN.md v0.1.0 작성 + memoc 메모리 초기 확정](neneee0181/2026-07/20260723T1113-plan-md-v0-1-0-memoc.md) — neneee0181 active.
