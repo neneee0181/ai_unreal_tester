@@ -40,18 +40,20 @@ tags:
 
 ## 확정된 결정 (Decisions)
 
-| # | 결정 | 이유 |
-|---|------|------|
-| D1 | 외부 에이전트 (게임 밖) | 게임 크래시해도 테스터 살아야 함. 크래시도 버그. |
-| D2 | 에이전트 = Python 3.12+ | LLM 생태계, 빠른 반복, 학습 쉬움 |
-| D3 | 브릿지 = 언리얼 C++ 플러그인 | 판단 안 함. 상태 노출 + 입력 + 판정만 |
-| D4 | LLM = Claude API (console API 키) | 구독 계정 호출은 비공식/불안정 → API 키 추천 |
-| D5 | 라이브러리 0개 자작 | 생 HTTP + 생 소켓 + JSON. SDK/공식MCP/LangChain X |
-| D6 | 통제 패턴 = Tool Use 직접 구현 | tool_use/tool_result 루프 = 에이전트 심장 |
-| D7 | 브릿지 프로토콜: 자체 JSON → 나중에 진짜 MCP | A→B 학습 사다리 |
-| D8 | 고수준 액션 우선 + 엔진 assertion | LLM에 성공판정 시키지 마. 엔진이 `boss.hp==0` 판정 |
-| D9 | UI: CLI → Streamlit → (최후) Tauri/Electron | Electron 지금 X. Python 에이전트라 섞으면 삽질 |
-| D10 | 언리얼 최신(5.8) 대상 | 공식 MCP 존재하나 재사용 안 함(자작 학습 목적) |
+
+| #   | 결정                                        | 이유                                          |
+| --- | ----------------------------------------- | ------------------------------------------- |
+| D1  | 외부 에이전트 (게임 밖)                            | 게임 크래시해도 테스터 살아야 함. 크래시도 버그.                |
+| D2  | 에이전트 = Python 3.12+                       | LLM 생태계, 빠른 반복, 학습 쉬움                       |
+| D3  | 브릿지 = 언리얼 C++ 플러그인                        | 판단 안 함. 상태 노출 + 입력 + 판정만                    |
+| D4  | LLM = Claude API (console API 키)          | 구독 계정 호출은 비공식/불안정 → API 키 추천                |
+| D5  | 라이브러리 0개 자작                               | 생 HTTP + 생 소켓 + JSON. SDK/공식MCP/LangChain X |
+| D6  | 통제 패턴 = Tool Use 직접 구현                    | tool_use/tool_result 루프 = 에이전트 심장           |
+| D7  | 브릿지 프로토콜: 자체 JSON → 나중에 진짜 MCP            | A→B 학습 사다리                                  |
+| D8  | 고수준 액션 우선 + 엔진 assertion                  | LLM에 성공판정 시키지 마. 엔진이 `boss.hp==0` 판정        |
+| D9  | UI: CLI → Streamlit → (최후) Tauri/Electron | Electron 지금 X. Python 에이전트라 섞으면 삽질          |
+| D10 | 언리얼 최신(5.8) 대상                            | 공식 MCP 존재하나 재사용 안 함(자작 학습 목적)               |
+
 
 ---
 
@@ -111,19 +113,21 @@ ai_unreal_tester/
 
 ## Part 1 — 자작 코어 Phase (원리 학습)
 
-| Phase | 목표 | 배움 | 완료 기준 |
-|-------|------|------|-----------|
-| **0** | 생 HTTP로 Claude API 호출 | API 인증, 메시지 포맷 | 터미널에서 Claude 답 받음 |
-| **1** | Tool Use 루프 (가짜 로컬 도구로) | 에이전트 심장, tool use 완전 이해 | Claude가 도구 부르고 결과 받아 최종답 |
-| **2** | 언리얼 플러그인 뼈대 + 소켓 | 플러그인 구조, C++ 네트워킹 | Python↔언리얼 ping/pong |
-| **3** | `GetGameState` 도구 | 게임 상태 접근, 직렬화 | Python이 실시간 게임 상태 봄 |
-| **4** | `PerformAction` (고수준 먼저) | 언리얼 입력/액션 시스템 | Python 명령으로 캐릭터 이동 |
-| **5** | 통합: LLM이 게임 조종 | 관찰→판단→행동 닫힌 루프 | 자연어 목표로 자율 플레이 |
-| **6** | `EvaluateAssertions` (엔진 판정) | 검증 가능한 테스트 설계 | pass/fail 객관 판정 |
-| **7** | 스크린샷 + 비전 | 멀티모달 메시지 포맷, 비용 최적화 | 렌더/UI 버그 감지 |
-| **8** | 지식베이스 + 시나리오 (YAML) | 프롬프트/컨텍스트 설계 | YAML만 고쳐 새 테스트 추가 |
-| **9** | 결정성 + 리포트 | 재현성, 자동 리포팅 | 시나리오 배치→리포트 자동생성 |
-| **10** | 자체 프로토콜 → 진짜 MCP 재구현 | MCP 스펙(JSON-RPC) 내재화 | 표준 MCP 클라(Claude Code) 붙음 |
+
+| Phase  | 목표                           | 배움                      | 완료 기준                     |
+| ------ | ---------------------------- | ----------------------- | ------------------------- |
+| **0**  | 생 HTTP로 Claude API 호출        | API 인증, 메시지 포맷          | 터미널에서 Claude 답 받음         |
+| **1**  | Tool Use 루프 (가짜 로컬 도구로)      | 에이전트 심장, tool use 완전 이해 | Claude가 도구 부르고 결과 받아 최종답  |
+| **2**  | 언리얼 플러그인 뼈대 + 소켓             | 플러그인 구조, C++ 네트워킹       | Python↔언리얼 ping/pong      |
+| **3**  | `GetGameState` 도구            | 게임 상태 접근, 직렬화           | Python이 실시간 게임 상태 봄       |
+| **4**  | `PerformAction` (고수준 먼저)     | 언리얼 입력/액션 시스템           | Python 명령으로 캐릭터 이동        |
+| **5**  | 통합: LLM이 게임 조종               | 관찰→판단→행동 닫힌 루프          | 자연어 목표로 자율 플레이            |
+| **6**  | `EvaluateAssertions` (엔진 판정) | 검증 가능한 테스트 설계           | pass/fail 객관 판정           |
+| **7**  | 스크린샷 + 비전                    | 멀티모달 메시지 포맷, 비용 최적화     | 렌더/UI 버그 감지               |
+| **8**  | 지식베이스 + 시나리오 (YAML)          | 프롬프트/컨텍스트 설계            | YAML만 고쳐 새 테스트 추가         |
+| **9**  | 결정성 + 리포트                    | 재현성, 자동 리포팅             | 시나리오 배치→리포트 자동생성          |
+| **10** | 자체 프로토콜 → 진짜 MCP 재구현         | MCP 스펙(JSON-RPC) 내재화    | 표준 MCP 클라(Claude Code) 붙음 |
+
 
 ### 상태 JSON 예시
 
@@ -150,15 +154,17 @@ ai_unreal_tester/
 
 자작 코어 위에 **리팩터링 레이어**로 얹음. 새 프로젝트 아님. 같은 테스터를 프레임워크로 재구현 = 비교학습.
 
-| Layer | 기술 | 전제 | 배움 | 시장가치 |
-|-------|------|------|------|----------|
-| **L1** | **LangGraph**로 에이전트 루프 재구현 | Phase 5 | 상태그래프, 자작 루프와 비교 | ★ 최고연봉 |
-| **L2** | **MCP** 표준화 | Phase 10 | JSON-RPC MCP 스펙 | ★ 수요급상승 |
-| **L3** | **RAG + 벡터DB**(Chroma) 지식 강화 | Phase 8 | 임베딩, 벡터검색, RAG | 거의 모든 공고 |
-| **L4** | **멀티에이전트**(CrewAI/LangGraph) | L1 | 역할설계, 오케스트레이션 | 스택 따라 |
-| **L5** | **평가+관측**(LangSmith/Langfuse, RAGAS) | L1 | LLMOps, eval, 추적 | 시니어 구분점 |
-| **L6** | **배포**(FastAPI + Docker) | L1 | 서비스화, LLMOps | 기본 |
-| **L7** | **프롬프트 인젝션 방어** | L3 | 에이전트 보안 | 차별점 |
+
+| Layer  | 기술                                   | 전제       | 배움               | 시장가치     |
+| ------ | ------------------------------------ | -------- | ---------------- | -------- |
+| **L1** | **LangGraph**로 에이전트 루프 재구현           | Phase 5  | 상태그래프, 자작 루프와 비교 | ★ 최고연봉   |
+| **L2** | **MCP** 표준화                          | Phase 10 | JSON-RPC MCP 스펙  | ★ 수요급상승  |
+| **L3** | **RAG + 벡터DB**(Chroma) 지식 강화         | Phase 8  | 임베딩, 벡터검색, RAG   | 거의 모든 공고 |
+| **L4** | **멀티에이전트**(CrewAI/LangGraph)         | L1       | 역할설계, 오케스트레이션    | 스택 따라    |
+| **L5** | **평가+관측**(LangSmith/Langfuse, RAGAS) | L1       | LLMOps, eval, 추적 | 시니어 구분점  |
+| **L6** | **배포**(FastAPI + Docker)             | L1       | 서비스화, LLMOps     | 기본       |
+| **L7** | **프롬프트 인젝션 방어**                      | L3       | 에이전트 보안          | 차별점      |
+
 
 ### 멀티에이전트 역할 (L4 예시)
 
@@ -216,14 +222,17 @@ Phase 10 MCP 자작            ──────►  L2  MCP 표준화 ★
 
 ## 참고 프로젝트 (베끼지 말고 읽기)
 
-| 프로젝트 | 훔칠 것 |
-|---------|---------|
-| ChiR24/Unreal_mcp | 커스텀 MCP 도구 C++ 등록 패턴 |
-| GamingAgent / Cradle | 에이전트 루프: 관찰→목표→행동→반성 |
-| GameGuard | assertion 변환, 회귀 diff, 버그 리포트 |
-| Gauntlet (공식) | 나중에 CI 감싸기 |
+
+| 프로젝트                 | 훔칠 것                          |
+| -------------------- | ----------------------------- |
+| ChiR24/Unreal_mcp    | 커스텀 MCP 도구 C++ 등록 패턴          |
+| GamingAgent / Cradle | 에이전트 루프: 관찰→목표→행동→반성          |
+| GameGuard            | assertion 변환, 회귀 diff, 버그 리포트 |
+| Gauntlet (공식)        | 나중에 CI 감싸기                    |
+
 
 ## 출처
 
 - Unreal MCP (UE 5.8 공식): dev.epicgames.com/documentation/unreal-engine/unreal-mcp-in-unreal-editor
 - AI Agent 시장/프레임워크: turing.com/resources/ai-agent-frameworks, langchain.com/state-of-agent-engineering
+
