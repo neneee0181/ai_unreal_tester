@@ -13,13 +13,13 @@ tags:
 Last: 2026-07-23
 
 ## Status
-초기 계획 단계. 코드 없음. 전체 개발 플랜 `.memoc/wiki/project/plan.md` v0.1.0 확정.
+Phase 0 완료. `agent/hello.py` 생 HTTP로 Claude 호출 성공(requests+dotenv). 멀티프로바이더 방침(D4).
 
 ## Changed
-`PLAN.md` 생성(자작 코어 Phase 0~10 + 프레임워크 레이어 L1~7). memoc brief/decisions 갱신.
+`agent/` 생성(venv, hello.py, .env gitignore). plan D4 멀티프로바이더 + 폴더구조(agent/ui/mcp/unreal) 갱신.
 
 ## Open Tasks
-Phase 0 — 생 HTTP로 Claude API 호출부터 시작.
+Phase 1 — Tool Use 루프(가짜 도구 get_time)로 tool_use/tool_result 왕복 구현.
 
 ## Resume
-`wiki/project/plan.md` Part 1 Phase 0. LLM=Claude console API 키. 라이브러리 0개 자작 원칙 유지.
+`wiki/project/plan.md` Part 1 Phase 1. 라이브러리 0개 자작. venv 재활성화 필요.

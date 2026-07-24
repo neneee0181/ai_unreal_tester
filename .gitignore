@@ -1,3 +1,7 @@
 
 .memoc/.pending
 .memoc/local/
+
+agent/.venv/
+agent/__pycache__/
+agent/*.env

@@ -46,7 +46,7 @@ tags:
 | D1  | 외부 에이전트 (게임 밖)                            | 게임 크래시해도 테스터 살아야 함. 크래시도 버그.                |
 | D2  | 에이전트 = Python 3.12+                       | LLM 생태계, 빠른 반복, 학습 쉬움                       |
 | D3  | 브릿지 = 언리얼 C++ 플러그인                        | 판단 안 함. 상태 노출 + 입력 + 판정만                    |
-| D4  | LLM = Claude API (console API 키)          | 구독 계정 호출은 비공식/불안정 → API 키 추천                |
+| D4  | LLM = 멀티프로바이더 (Claude/OpenAI/DeepSeek), API 키 + dotenv | 구독 호출은 비공식/불안정 → API 키. OpenAI·DeepSeek은 API 모양 동일, Claude만 독자 |
 | D5  | 라이브러리 0개 자작                               | 생 HTTP + 생 소켓 + JSON. SDK/공식MCP/LangChain X |
 | D6  | 통제 패턴 = Tool Use 직접 구현                    | tool_use/tool_result 루프 = 에이전트 심장           |
 | D7  | 브릿지 프로토콜: 자체 JSON → 나중에 진짜 MCP            | A→B 학습 사다리                                  |
@@ -78,22 +78,23 @@ tags:
 └───────────────────────────────────────────────────── ┘
 ```
 
-### 폴더 구조
+### 폴더 구조 (최상위 4분할)
 
 ```
 ai_unreal_tester/
-├── agent/
-│   ├── llm_client.py       # 생 HTTP LLM 호출
-│   ├── tools.py            # 도구 스키마
-│   ├── agent_loop.py       # tool use 루프
-│   ├── bridge_client.py    # 언리얼 통신
-│   ├── ui/                 # Streamlit 대시보드 (나중)
-│   ├── knowledge/          # keymap.yaml, goals.yaml
-│   ├── scenarios/
-│   └── reports/
-└── UnrealPlugin/
-    └── AITesterBridge/     # C++
+├── agent/              # 파이썬 뇌 ("서버")
+│   ├── hello.py        # Phase 0 생 호출 테스트 (완료)
+│   ├── llm/            # 프로바이더 (claude/openai/deepseek), base 인터페이스
+│   ├── loop/           # tool use 루프 (Phase 1+)
+│   ├── knowledge/      # keymap.yaml, goals.yaml
+│   ├── scenarios/, reports/
+│   ├── .env            # API 키 (gitignore됨)
+│   └── requirements.txt
+├── ui/                 # cli/ 지금, desktop/ 나중(Tauri/Electron)
+├── mcp/                # MCP 브릿지 프로토콜 (Phase 2+)
+└── unreal/             # C++ 플러그인 AITesterBridge (Phase 2+)
 ```
+- 폴더명 소문자, 하이픈 X (파이썬 import). dotenv로 `.env` 키 로드.
 
 ---
 
@@ -216,9 +217,10 @@ Phase 10 MCP 자작            ──────►  L2  MCP 표준화 ★
 - **스코프 폭발**: 범용 Codex 클론 금지. 게임 테스트에만 고정. (코드 자동수정은 한참 뒤 선택지)
 - **구독 계정 호출**: 비공식/불안정 → console API 키 사용.
 
-## 다음 할 일
+## 진행 상황
 
-- **Phase 0 시작**: 생 HTTP로 Claude API 호출 (curl → Python `requests`).
+- ✅ **Phase 0 완료** (2026-07-24): `agent/hello.py` 생 HTTP로 Claude 호출 성공. requests+dotenv, 응답/토큰/stop_reason 파싱.
+- ▶ **Phase 1 다음**: Tool Use 루프 (가짜 로컬 도구 `get_time`으로 Claude 상대). `stop_reason=="tool_use"` 감지 → 실행 → tool_result 재주입 → 반복.
 
 ## 참고 프로젝트 (베끼지 말고 읽기)
 
