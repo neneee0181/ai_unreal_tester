@@ -42,7 +42,7 @@ def main() -> None:
     }
 
     try:
-        response = requests.post(
+        response = requests.post(   
             API_URL,
             headers=headers,
             json=body,
