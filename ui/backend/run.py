@@ -20,8 +20,9 @@ from agent.llm import get_provider
 from agent.loop.agent_loop import run
 from agent.loop import events
 
-# .env 는 agent/ 안. 루트에서 python -m 으로 실행해도 찾도록 경로 명시.
-load_dotenv(Path(__file__).resolve().parents[2] / "agent" / ".env")
+# .env 는 레포 루트(프로젝트 공용 설정). 어디서 실행해도 찾도록 경로 명시.
+#   ui/backend/run.py → parents[2] = 레포 루트
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
 
 def cli_print(event) -> None:
