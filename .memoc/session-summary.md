@@ -3,23 +3,23 @@ memoc: true
 type: state
 scope: project-memory
 created: 2026-07-23T10:38:31
-updated: 2026-07-23
+updated: 2026-07-25
 status: active
 tags:
   - memoc
   - memoc/state
 ---
 # Session Summary
-Last: 2026-07-23
+Last: 2026-07-25
 
 ## Status
-Phase 0 완료. `agent/hello.py` 생 HTTP로 Claude 호출 성공(requests+dotenv). 멀티프로바이더 방침(D4).
+Phase 1 완료. `agent/loop.py` tool use 루프 동작(도구 2개 get_time/add_numbers, 병렬 tool_use, 예외흡수, MAX_TURNS, 토큰누적). plan v0.2.0(D11~D14 목표구조).
 
 ## Changed
-`agent/` 생성(venv, hello.py, .env gitignore). plan D4 멀티프로바이더 + 폴더구조(agent/ui/mcp/unreal) 갱신.
+loop.py 병렬 도구까지. plan v0.2.0: 목표 폴더구조 선반영(agent/llm·tools·loop, ui/cli), D12 실행=`python -m`, D13 이벤트콜백 출력분리, D14 언리얼=ai_agent_test/.
 
 ## Open Tasks
-Phase 1 — Tool Use 루프(가짜 도구 get_time)로 tool_use/tool_result 왕복 구현.
+다음: loop.py를 목표구조로 분해(llm/·tools/·loop/·ui/cli). 코드 작을 때 리팩터 → 그다음 Phase 2 언리얼.
 
 ## Resume
-`wiki/project/plan.md` Part 1 Phase 1. 라이브러리 0개 자작. venv 재활성화 필요.
+`wiki/project/plan.md` v0.2.0 폴더구조/의존방향 표대로 분해. 라이브러리 0개 유지. 실제 코드는 아직 hello.py+loop.py 평면.
