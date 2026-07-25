@@ -2,8 +2,8 @@
 memoc: true
 type: wiki
 scope: project-memory
-created: 2026-07-23T10:38:37
-updated: 2026-07-23T10:38:37
+created: 2026-07-25T13:29:01
+updated: 2026-07-25T13:29:01
 status: active
 confidence: medium
 tags:
@@ -22,7 +22,7 @@ Persistent LLM-maintained wiki hub.
 
 ## Project Pages
 
-- [개발 플랜 (plan.md)](project/plan.md) — 전체 개발 플랜 v0.1.0. 목표/결정/아키텍처/Phase/프레임워크 레이어.
+- [개발 플랜 (plan.md)](project/plan.md) — 전체 개발 플랜 v0.2.1. 목표/결정 D1~D14/아키텍처/폴더구조/Phase/프레임워크 레이어.
 
 ## Knowledge Pages
 

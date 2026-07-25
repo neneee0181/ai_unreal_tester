@@ -2,8 +2,8 @@
 memoc: true
 type: core
 scope: project-memory
-created: 2026-07-23T10:38:37
-updated: 2026-07-23T10:38:37
+created: 2026-07-25T13:29:01
+updated: 2026-07-25T13:29:01
 status: active
 tags:
   - memoc
@@ -22,7 +22,9 @@ This is the shortest project summary for a fresh agent. Keep it factual and easy
 
 ## Current Direction
 
-학습 겸용 **언리얼 게임 테스트용 AI 에이전트** 개발. 외부 Python 에이전트가 언리얼 C++ 브릿지를 통해 관찰(로그+스크린샷)→판단(Claude)→행동(입력/명령)→검증(엔진 assertion) 닫힌 루프로 게임을 자율 테스트. 라이브러리 0개 자작으로 원리 학습 후 프레임워크(LangGraph/MCP/RAG) 레이어로 재구현 = 취업 경쟁력. 전체 플랜: `.memoc/wiki/project/plan.md` (v0.1.0).
+학습 겸용 **언리얼 게임 테스트용 AI 에이전트**. 외부 Python 에이전트가 관찰(로그+스샷)→판단(LLM)→행동→검증 닫힌 루프로 게임 자율 테스트. 라이브러리 0개 자작으로 원리 학습 후 프레임워크(LangGraph/MCP/RAG) 레이어로 재구현=취업. 전체 플랜: `.memoc/wiki/project/plan.md` (v0.2.1).
+
+진행 순서(사용자 결정): **#1 멀티프로바이더(완료) → #2 Electron MVP → #3 Phase 2 언리얼**. UI/UX는 병행하되 MVP만, 폼은 진짜 게임 데이터 위에서.
 
 ## How To Approach
 
@@ -33,7 +35,7 @@ This is the shortest project summary for a fresh agent. Keep it factual and easy
 
 ## Next Useful Work
 
-- Phase 0: 생 HTTP로 Claude API 호출 (curl → Python `requests`). `wiki/project/plan.md` Part 1 참고.
+- #2 Electron MVP: `ui/backend/run.py`에 JSON 이벤트 출력 + stdin 질문 수신, `ui/desktop/*` 구현(spawn+IPC), 프로바이더 드롭다운(`available()`).
 
 ## Important Notes
 

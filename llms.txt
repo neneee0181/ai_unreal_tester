@@ -27,7 +27,7 @@ This file is a map, not a startup read. Start from the entry-file protocol and o
 ## Project Wiki
 
 <!-- memoc:systems:start -->
-_None yet._
+- [plan](.memoc/wiki/project/plan.md): project implementation context.
 <!-- memoc:systems:end -->
 
 ## Knowledge Wiki
