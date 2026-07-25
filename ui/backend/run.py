@@ -10,6 +10,7 @@ Electron 붙일 때: cli_print 를 'JSON 을 stdout 에 찍는 함수' 로만 �
 루프는 손 안 댄다 (D13).
 """
 
+import os
 import sys
 from pathlib import Path
 
@@ -47,7 +48,9 @@ def main() -> None:
         sys.exit(1)
 
     # 프로바이더 이름 — 나중에 Electron 이 이 값을 보낸다.
-    provider = get_provider("claude")
+    # 개발 중엔 LLM_PROVIDER 환경변수로 전환: claude(기본) / openai / deepseek
+    name = os.environ.get("LLM_PROVIDER", "claude")
+    provider = get_provider(name)
 
     run(" ".join(sys.argv[1:]), provider, on_event=cli_print)
 
