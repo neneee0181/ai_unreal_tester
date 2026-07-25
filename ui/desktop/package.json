@@ -1,0 +1,10 @@
+{
+  "name": "ai-unreal-tester-desktop",
+  "version": "0.1.0",
+  "description": "Electron desktop UI for the AI Unreal Tester agent (spawns the Python agent via ui.backend.run).",
+  "main": "main/main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {}
+}

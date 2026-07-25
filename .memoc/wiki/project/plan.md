@@ -2,7 +2,7 @@
 memoc: true
 type: wiki
 scope: project-memory
-version: 0.2.0
+version: 0.2.1
 created: 2026-07-23
 updated: 2026-07-25
 status: active
@@ -18,7 +18,7 @@ tags:
 ---
 # AI Unreal Tester — 개발 플랜
 
-> Version 0.2.0 · 2026-07-25
+> Version 0.2.1 · 2026-07-25
 
 ## 최종 목표
 
@@ -51,10 +51,10 @@ tags:
 | D6  | 통제 패턴 = Tool Use 직접 구현                    | tool_use/tool_result 루프 = 에이전트 심장           |
 | D7  | 브릿지 프로토콜: 자체 JSON → 나중에 진짜 MCP            | A→B 학습 사다리                                  |
 | D8  | 고수준 액션 우선 + 엔진 assertion                  | LLM에 성공판정 시키지 마. 엔진이 `boss.hp==0` 판정        |
-| D9  | UI: CLI → Streamlit → (최후) Tauri/Electron | Electron 지금 X. Python 에이전트라 섞으면 삽질          |
+| D9  | UI = Electron 데스크탑. Python 뇌와 프로세스 분리, stdio JSON 통신 | 직접 import 불가(JS↔Py) → ui/backend/run.py를 spawn. 뼈대는 지금, 구현은 나중 |
 | D10 | 언리얼 최신(5.8) 대상                            | 공식 MCP 존재하나 재사용 안 함(자작 학습 목적)               |
 | D11 | 미래 구조 선반영 (빈 폴더 미리 생성)                    | 나중에 "이 파일 어디 두지" 고민 제거. 도구 추가 시 폴더만 채움      |
-| D12 | 실행은 레포 루트에서 `python -m ui.cli.main`       | 폴더 분리 시 import 깨짐 방지. 모든 패키지에 `__init__.py`, import는 루트 절대경로 |
+| D12 | 실행은 레포 루트에서 `python -m ui.backend.run`   | 폴더 분리 시 import 깨짐 방지. 모든 패키지에 `__init__.py`, import는 루트 절대경로 |
 | D13 | 출력은 이벤트 콜백(`on_event`)으로 루프 밖에 위임         | 루프 안 `print` 금지. CLI→Streamlit→FastAPI 갈아끼워도 루프 무수정 |
 | D14 | 언리얼 프로젝트 폴더명 = `ai_agent_test/` (레포 루트 바로 밑) | 플러그인은 그 바로 아래. `unreal/` 대신 실제 프로젝트명 사용      |
 
@@ -132,10 +132,20 @@ ai_unreal_tester/
 │
 ├── ui/                             # [화면] 진입점
 │   ├── __init__.py             ★
-│   ├── cli/
+│   ├── backend/                    파이썬↔데스크탑 다리 (Electron이 spawn)
 │   │   ├── __init__.py         ★
-│   │   └── main.py             ★   현재 진입점 (argv + print)
-│   └── desktop/                    Tauri/Electron (최후, D9)
+│   │   └── run.py              ★   loop 실행 → on_event를 stdout JSON으로. 개발 진입점도 겸함
+│   └── desktop/                    Electron 앱 (JS, 화면) — D9
+│       ├── package.json        ★   Node 의존성/스크립트/앱 메타
+│       ├── main/                   메인 프로세스(Node, OS 권한)
+│       │   ├── main.js         ★   앱 진입점: 창 생성/수명주기
+│       │   ├── preload.js      ★   contextBridge 안전 다리
+│       │   └── agent-process.js ★  python -m ui.backend.run spawn + JSON 수신
+│       ├── renderer/               화면(웹기술)
+│       │   ├── index.html      ★   UI 뼈대
+│       │   ├── renderer.js     ★   이벤트 표시 + 입력
+│       │   └── styles.css      ★
+│       └── README.md           ★   구조/실행법
 │
 ├── mcp/                            # MCP 자작 (Phase 10)
 │   └── README.md               ★
@@ -152,7 +162,8 @@ ai_unreal_tester/
 | 경로 | 지금 상태 | 채우는 시점 |
 | --- | --- | --- |
 | `mcp/README.md` | 한 줄 메모: `Phase 10: 자체 프로토콜 → MCP 재구현` | Phase 10 |
-| `ui/desktop/` | 빈 폴더 | 최후 (D9, Tauri/Electron) |
+| `ui/desktop/*` | 뼈대+주석만 (JS 빈 구현) | 데스크탑 UI 붙일 때 (D9) |
+| `ui/backend/run.py` | 주석만 | Phase 1 후반 (loop→JSON stdout 어댑터) |
 | `agent/tools/game/` | `__init__.py`만 (빈 껍데기) | Phase 3~7, 도구별 파일 추가 |
 | `agent/bridge/client.py` | 없음 | Phase 2 (언리얼 소켓 붙일 때) |
 | `agent/loop/session.py` | 없음 | Phase 1 후반 (토큰 누적/대화기록) |
@@ -162,7 +173,7 @@ ai_unreal_tester/
 ### 의존 방향 (한 방향만)
 
 ```
-ui/cli/main.py
+ui/backend/run.py  (← Electron desktop이 spawn)
       ↓
 agent/loop/agent_loop.py
       ↓                ↓
@@ -177,7 +188,8 @@ agent/llm/*      agent/tools/*
 
 | 파일 | 아는 것 | 모르는 것 ❌ |
 | --- | --- | --- |
-| `ui/cli/main.py` | argv, print, exit code | messages 구조, tool_use, HTTP |
+| `ui/backend/run.py` | loop 호출, 이벤트→JSON stdout | 화면 렌더링, HTTP |
+| `ui/desktop/main/*.js` | 창 생성, 파이썬 spawn, IPC | 에이전트 내부 로직 |
 | `loop/agent_loop.py` | messages, stop_reason, 턴 수 | HTTP·API키, print, datetime |
 | `loop/events.py` | 진행 데이터 모양 | 누가 출력하는지 |
 | `llm/base.py` | `call(messages, tools)` 규약 | Anthropic이 뭔지 |
@@ -190,8 +202,8 @@ agent/llm/*      agent/tools/*
 
 ```bash
 cd ai_unreal_tester
-python -m ui.cli.main "지금 몇시야?"     # ✅
-python ui/cli/main.py "..."            # ❌ ModuleNotFoundError
+python -m ui.backend.run "지금 몇시야?"   # ✅ (개발 진입점; Electron도 이 모듈 spawn)
+python ui/backend/run.py "..."          # ❌ ModuleNotFoundError
 ```
 
 import은 항상 루트부터 절대경로: `from agent.llm.claude import ClaudeProvider`.
@@ -240,7 +252,7 @@ import은 항상 루트부터 절대경로: `from agent.llm.claude import Claude
 | 3 | `tools/base.py` → `builtin/time_tool.py` → `tools/__init__.py` | `registry.execute("get_time", {})` 시각 반환 |
 | 4 | `loop/events.py` | dataclass 5종 (TurnStart/ToolCall/ToolResult/FinalText/Usage) |
 | 5 | `loop/agent_loop.py` | 핵심. 아래 함정 표 참고 |
-| 6 | `ui/cli/main.py` | `python -m ui.cli.main "지금 몇시야?"` |
+| 6 | `ui/backend/run.py` | `python -m ui.backend.run "지금 몇시야?"` (on_event→출력) |
 
 **완료 기준**
 - `"지금 몇시야?"` → 턴1 도구 호출, 턴2 최종답
