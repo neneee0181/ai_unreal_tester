@@ -1,7 +1,35 @@
-
+# memoc
 .memoc/.pending
 .memoc/local/
 
-agent/.venv/
-agent/__pycache__/
-agent/*.env
+# 로컬 에이전트 설정 (머신마다 절대경로 다름)
+.agents/
+
+# Python 가상환경 (위치 무관하게 무시)
+.venv/
+venv/
+env/
+
+# Python 캐시/빌드
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# 비밀키 — .env는 어떤 폴더에 있든 절대 커밋 금지
+.env
+*.env
+.env.*
+!.env.example
+
+# OS / 에디터
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+
+# 실행 산출물 (Phase 7+ 리포트/스크린샷)
+agent/reports/
+*.log

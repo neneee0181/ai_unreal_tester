@@ -1,0 +1,8 @@
+# Python 3.12+
+# 설치: .venv/bin/python -m pip install -r agent/requirements.txt
+#
+# 원칙(D5): 라이브러리 0개 자작. SDK/프레임워크 금지.
+# requests = 생 HTTP 호출용, python-dotenv = .env 키 로드용. 이 둘만 허용.
+
+requests==2.34.2
+python-dotenv==1.2.2
