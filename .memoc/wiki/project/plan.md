@@ -2,9 +2,9 @@
 memoc: true
 type: wiki
 scope: project-memory
-version: 0.1.0
+version: 0.2.0
 created: 2026-07-23
-updated: 2026-07-23
+updated: 2026-07-25
 status: active
 confidence: high
 tags:
@@ -18,7 +18,7 @@ tags:
 ---
 # AI Unreal Tester — 개발 플랜
 
-> Version 0.1.0 · 2026-07-23
+> Version 0.2.0 · 2026-07-25
 
 ## 최종 목표
 
@@ -53,6 +53,10 @@ tags:
 | D8  | 고수준 액션 우선 + 엔진 assertion                  | LLM에 성공판정 시키지 마. 엔진이 `boss.hp==0` 판정        |
 | D9  | UI: CLI → Streamlit → (최후) Tauri/Electron | Electron 지금 X. Python 에이전트라 섞으면 삽질          |
 | D10 | 언리얼 최신(5.8) 대상                            | 공식 MCP 존재하나 재사용 안 함(자작 학습 목적)               |
+| D11 | 미래 구조 선반영 (빈 폴더 미리 생성)                    | 나중에 "이 파일 어디 두지" 고민 제거. 도구 추가 시 폴더만 채움      |
+| D12 | 실행은 레포 루트에서 `python -m ui.cli.main`       | 폴더 분리 시 import 깨짐 방지. 모든 패키지에 `__init__.py`, import는 루트 절대경로 |
+| D13 | 출력은 이벤트 콜백(`on_event`)으로 루프 밖에 위임         | 루프 안 `print` 금지. CLI→Streamlit→FastAPI 갈아끼워도 루프 무수정 |
+| D14 | 언리얼 프로젝트 폴더명 = `ai_agent_test/` (레포 루트 바로 밑) | 플러그인은 그 바로 아래. `unreal/` 대신 실제 프로젝트명 사용      |
 
 
 ---
@@ -80,21 +84,118 @@ tags:
 
 ### 폴더 구조 (최상위 4분할)
 
+미래 구조를 지금 미리 세움(D11). `★` = Phase 1에서 실제 생성.
+
 ```
 ai_unreal_tester/
-├── agent/              # 파이썬 뇌 ("서버")
-│   ├── hello.py        # Phase 0 생 호출 테스트 (완료)
-│   ├── llm/            # 프로바이더 (claude/openai/deepseek), base 인터페이스
-│   ├── loop/           # tool use 루프 (Phase 1+)
-│   ├── knowledge/      # keymap.yaml, goals.yaml
-│   ├── scenarios/, reports/
-│   ├── .env            # API 키 (gitignore됨)
-│   └── requirements.txt
-├── ui/                 # cli/ 지금, desktop/ 나중(Tauri/Electron)
-├── mcp/                # MCP 브릿지 프로토콜 (Phase 2+)
-└── unreal/             # C++ 플러그인 AITesterBridge (Phase 2+)
+├── .venv/                          # Python 3.12.13 (gitignore)
+│
+├── agent/                          # 파이썬 뇌
+│   ├── __init__.py             ★
+│   ├── hello.py                    # Phase 0 기념비 (보존)
+│   ├── requirements.txt            # requests + python-dotenv 만
+│   ├── .env / .env.example         # API 키 (.env는 gitignore)
+│   │
+│   ├── llm/                        # [입] 프로바이더 — 누구에게 묻나
+│   │   ├── __init__.py         ★
+│   │   ├── base.py             ★   LLMProvider 추상 규약
+│   │   ├── claude.py           ★   Anthropic 생 HTTP (Phase 1 유일 구현)
+│   │   ├── openai.py               (나중)
+│   │   └── deepseek.py             (나중)
+│   │
+│   ├── tools/                      # [손] 도구 — 뭘 할 수 있나
+│   │   ├── __init__.py         ★   레지스트리(스펙 수집 + 이름→실행)
+│   │   ├── base.py             ★   Tool 규약(name/description/schema/run)
+│   │   ├── builtin/                게임 무관 기본 도구
+│   │   │   ├── __init__.py     ★
+│   │   │   └── time_tool.py    ★   get_time (Phase 1 학습용)
+│   │   └── game/                   게임 도구 (Phase 3+)
+│   │       ├── __init__.py     ★   (빈 껍데기)
+│   │       ├── state.py            get_game_state
+│   │       ├── action.py           perform_action / press_input
+│   │       ├── vision.py           capture_view
+│   │       └── assertion.py        evaluate_assertions
+│   │
+│   ├── loop/                       # [뇌] 판단 루프
+│   │   ├── __init__.py         ★
+│   │   ├── agent_loop.py       ★   tool_use/tool_result 왕복 (Phase 1 핵심)
+│   │   ├── events.py           ★   진행 이벤트 타입 (출력 분리, D13)
+│   │   └── session.py              대화기록/토큰 누적 (Phase 1 후반)
+│   │
+│   ├── bridge/                     # 언리얼 통신 (Phase 2+)
+│   │   ├── __init__.py         ★
+│   │   └── client.py               자체 JSON 프로토콜 클라이언트
+│   │
+│   ├── knowledge/  .gitkeep    ★   keymap.yaml, goals.yaml (Phase 8)
+│   ├── scenarios/  .gitkeep    ★   테스트 시나리오 (Phase 8)
+│   └── reports/                    결과물 (Phase 9, gitignore)
+│
+├── ui/                             # [화면] 진입점
+│   ├── __init__.py             ★
+│   ├── cli/
+│   │   ├── __init__.py         ★
+│   │   └── main.py             ★   현재 진입점 (argv + print)
+│   └── desktop/                    Tauri/Electron (최후, D9)
+│
+├── mcp/                            # MCP 자작 (Phase 10)
+│   └── README.md               ★
+│
+└── ai_agent_test/                  # 언리얼 5.8 프로젝트 (D14)
+    └── (플러그인 AITesterBridge를 이 바로 밑에)
 ```
+
 - 폴더명 소문자, 하이픈 X (파이썬 import). dotenv로 `.env` 키 로드.
+- 빈 폴더는 git이 추적 안 함 → `.gitkeep` 또는 `README.md` 하나 넣어야 커밋됨.
+
+#### 자리만 잡아두는 곳 (내용은 해당 Phase에서 채움)
+
+| 경로 | 지금 상태 | 채우는 시점 |
+| --- | --- | --- |
+| `mcp/README.md` | 한 줄 메모: `Phase 10: 자체 프로토콜 → MCP 재구현` | Phase 10 |
+| `ui/desktop/` | 빈 폴더 | 최후 (D9, Tauri/Electron) |
+| `agent/tools/game/` | `__init__.py`만 (빈 껍데기) | Phase 3~7, 도구별 파일 추가 |
+| `agent/bridge/client.py` | 없음 | Phase 2 (언리얼 소켓 붙일 때) |
+| `agent/loop/session.py` | 없음 | Phase 1 후반 (토큰 누적/대화기록) |
+| `agent/knowledge/`, `agent/scenarios/` | `.gitkeep`만 | Phase 8 (YAML) |
+| `ai_agent_test/` (언리얼) | **생성 안 함** | Phase 2 — 언리얼 에디터가 프로젝트 생성 시 직접 만듦 |
+
+### 의존 방향 (한 방향만)
+
+```
+ui/cli/main.py
+      ↓
+agent/loop/agent_loop.py
+      ↓                ↓
+agent/llm/*      agent/tools/*
+```
+
+- `llm/`이 `tools/`를 import ❌ (통신 담당은 도구를 몰라야 함)
+- `tools/`가 `loop/`를 import ❌ (순환)
+- 화살표가 거꾸로 가면 설계가 틀린 것.
+
+### 파일별 경계 — "모르는 것"이 더 중요
+
+| 파일 | 아는 것 | 모르는 것 ❌ |
+| --- | --- | --- |
+| `ui/cli/main.py` | argv, print, exit code | messages 구조, tool_use, HTTP |
+| `loop/agent_loop.py` | messages, stop_reason, 턴 수 | HTTP·API키, print, datetime |
+| `loop/events.py` | 진행 데이터 모양 | 누가 출력하는지 |
+| `llm/base.py` | `call(messages, tools)` 규약 | Anthropic이 뭔지 |
+| `llm/claude.py` | URL, 헤더, requests, 에러 | 도구가 뭔지, 루프가 있는지 |
+| `tools/base.py` | 도구 공통 모양 | 특정 도구 내용 |
+| `tools/__init__.py` | 스펙 수집, 이름→실행, 예외 흡수 | Claude, HTTP |
+| `tools/builtin/time_tool.py` | datetime | Claude, 루프 |
+
+### 실행 방법 (D12)
+
+```bash
+cd ai_unreal_tester
+python -m ui.cli.main "지금 몇시야?"     # ✅
+python ui/cli/main.py "..."            # ❌ ModuleNotFoundError
+```
+
+import은 항상 루트부터 절대경로: `from agent.llm.claude import ClaudeProvider`.
+상대 import(`from ..llm import`) 쓰지 말 것.
 
 ---
 
@@ -129,6 +230,32 @@ ai_unreal_tester/
 | **9**  | 결정성 + 리포트                    | 재현성, 자동 리포팅             | 시나리오 배치→리포트 자동생성          |
 | **10** | 자체 프로토콜 → 진짜 MCP 재구현         | MCP 스펙(JSON-RPC) 내재화    | 표준 MCP 클라(Claude Code) 붙음 |
 
+
+### Phase 1 작업 순서 (아래 → 위, 단계마다 검증)
+
+| # | 만들 것 | 검증 방법 |
+| - | --- | --- |
+| 1 | 폴더 전체 + `__init__.py` | `python -c "import agent.llm, agent.tools, agent.loop"` 무에러 |
+| 2 | `llm/base.py` → `llm/claude.py` | 콘솔에서 `call([...])` → 응답 dict 확인. 이후 `loop.py` 삭제 |
+| 3 | `tools/base.py` → `builtin/time_tool.py` → `tools/__init__.py` | `registry.execute("get_time", {})` 시각 반환 |
+| 4 | `loop/events.py` | dataclass 5종 (TurnStart/ToolCall/ToolResult/FinalText/Usage) |
+| 5 | `loop/agent_loop.py` | 핵심. 아래 함정 표 참고 |
+| 6 | `ui/cli/main.py` | `python -m ui.cli.main "지금 몇시야?"` |
+
+**완료 기준**
+- `"지금 몇시야?"` → 턴1 도구 호출, 턴2 최종답
+- `"안녕"` → 턴1 바로 `end_turn` (도구 안 씀 = 정상 동작)
+
+### Phase 1 함정 (전원 여기서 막힘)
+
+| 증상 | 원인 |
+| --- | --- |
+| `400 invalid tool_use_id` | 응답의 `id`를 그대로 안 씀 |
+| 400 / 도구 무한 반복 | assistant 턴 append 누락 (`{"role":"assistant","content": data["content"]}` 배열 통째로) |
+| 400 unresolved tool_use | 한 턴에 도구 2개인데 1개만 응답. **전부** 줘야 함 |
+| 400 content 타입 | tool_result 담는 user 메시지 `content`는 **반드시 배열** |
+| `TypeError: string indices` | `data["content"]`는 항상 블록 배열. `text`+`tool_use`가 같이 옴 |
+| 크레딧 순삭 | `max_turns` 안 걸음 (기본 10) |
 
 ### 상태 JSON 예시
 
