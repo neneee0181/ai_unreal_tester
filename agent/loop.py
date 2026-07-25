@@ -36,6 +36,18 @@ TOOLS = [
             "required": [],
         },
     },
+    {
+        "name": "add_numbers",
+        "description": "두 숫자를 더한 결과를 문자열로 반환한다. 사용자가 두 수의 합을 물으면 사용.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "a": {"type": "number", "description": "첫 번째 숫자"},
+                "b": {"type": "number", "description": "두 번째 숫자"}
+            },
+            "required": ["a", "b"],
+        },
+    }
 ]
 
 
@@ -44,10 +56,14 @@ TOOLS = [
 def get_time(**kwargs) -> str:
     return datetime.now().isoformat(timespec="seconds")
 
+def add_numbers(a, b, **kwargs) -> str:
+    return str(a + b)
+
 
 # 이름 → 함수. 도구가 늘어도 루프 코드는 안 고친다.
 TOOL_FUNCS = {
     "get_time": get_time,
+    "add_numbers": add_numbers
 }
 
 
