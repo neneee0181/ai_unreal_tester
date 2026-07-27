@@ -61,6 +61,10 @@ sh .memoc/bin/memoc lint-wiki                        # 위키 검사
 
 `.venv-1/`(Python 3.9 잔재) 삭제 완료(2026-07-27). gitignore는 `.venv*/`로 확장.
 
+**`.env` 위치 = 레포 루트** (프로젝트 공용). `run.py`가 `parents[2]/.env`를 로드.
+2026-07-27까지 실제 파일이 `agent/.env`에 남아 있어 경로 불일치였음 → 루트로 이동해 해결.
+`load_dotenv`는 파일이 없어도 조용히 실패하므로 키 오류 시 위치부터 확인할 것.
+
 ## Notes
 
 _None yet._
