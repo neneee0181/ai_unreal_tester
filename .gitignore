@@ -25,6 +25,11 @@ __pycache__/
 .env.*
 !.env.example
 
+# Node / Electron 렌더러 (D15)
+node_modules/
+ui/desktop/dist/
+npm-debug.log*
+
 # OS / 에디터
 .DS_Store
 Thumbs.db

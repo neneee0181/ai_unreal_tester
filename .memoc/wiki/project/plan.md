@@ -2,7 +2,7 @@
 memoc: true
 type: wiki
 scope: project-memory
-version: 0.3.0
+version: 0.4.0
 created: 2026-07-23
 updated: 2026-07-27
 status: active
@@ -18,7 +18,7 @@ tags:
 ---
 # AI Unreal Tester — 개발 플랜
 
-> Version 0.3.0 · 2026-07-27
+> Version 0.4.0 · 2026-07-27
 
 ## 최종 목표
 
@@ -57,6 +57,7 @@ tags:
 | D12 | 실행은 레포 루트에서 `python -m ui.backend.run`   | 폴더 분리 시 import 깨짐 방지. 모든 패키지에 `__init__.py`, import는 루트 절대경로 |
 | D13 | 출력은 이벤트 콜백(`on_event`)으로 루프 밖에 위임         | 루프 안 `print` 금지. CLI→Streamlit→FastAPI 갈아끼워도 루프 무수정 |
 | D14 | 언리얼 프로젝트 폴더명 = `ai_agent_test/` (레포 루트 바로 밑) | 플러그인은 그 바로 아래. `unreal/` 대신 실제 프로젝트명 사용      |
+| D15 | 렌더러 = **React + Vite + framer-motion** (2026-07-27) | Electron 렌더러는 Chromium이라 React 가능. 번들러만 있으면 됨. 취업 가치 + 나중 이식 비용 제거. D5(라이브러리 0개)는 **에이전트 코어 한정**, UI는 예외 |
 
 
 ---
@@ -135,17 +136,20 @@ ai_unreal_tester/
 │   ├── backend/                    파이썬↔데스크탑 다리 (Electron이 spawn)
 │   │   ├── __init__.py         ★
 │   │   └── run.py              ★   loop 실행 → on_event를 stdout JSON으로. 개발 진입점도 겸함
-│   └── desktop/                    Electron 앱 (JS, 화면) — D9
-│       ├── package.json        ★   Node 의존성/스크립트/앱 메타
+│   └── desktop/                    Electron 앱 — D9, 렌더러는 React+Vite (D15)
+│       ├── package.json            electron, react, vite, framer-motion
+│       ├── vite.config.js          JSX 변환 + dev 서버(5173)
+│       ├── index.html              Vite 진입 HTML (루트에 위치)
 │       ├── main/                   메인 프로세스(Node, OS 권한)
-│       │   ├── main.js         ★   앱 진입점: 창 생성/수명주기
-│       │   ├── preload.js      ★   contextBridge 안전 다리
-│       │   └── agent-process.js ★  python -m ui.backend.run spawn + JSON 수신
-│       ├── renderer/               화면(웹기술)
-│       │   ├── index.html      ★   UI 뼈대
-│       │   ├── renderer.js     ★   이벤트 표시 + 입력
-│       │   └── styles.css      ★
-│       └── README.md           ★   구조/실행법
+│       │   ├── main.js             창 생성 + dev/prod 로드 분기
+│       │   ├── preload.js          contextBridge 안전 다리
+│       │   └── agent-process.js    python -m ui.backend.run spawn + JSON 수신
+│       ├── src/                    렌더러(React)
+│       │   ├── main.jsx            ReactDOM 마운트
+│       │   ├── App.jsx             입력창 + 이벤트 로그 + 토큰 + 프로바이더
+│       │   └── styles.css
+│       ├── dist/                   vite build 결과물 (gitignore)
+│       └── README.md               구조/실행법
 │
 ├── mcp/                            # MCP 자작 (Phase 10)
 │   └── README.md               ★
@@ -314,11 +318,14 @@ Electron (JS)  ──spawn──▶  python -m ui.backend.run
 | - | --- | --- |
 | 1 | `run.py`: `json_print` 추가 (`cli_print` 유지) | `--json` 실행 → JSON 줄만 출력 |
 | 2 | `run.py`: stdin 루프 | 터미널에 JSON 붙여넣기 → 응답 |
-| 3 | `main.js` + `index.html`: 창 띄우기 | `npm start` → 빈 창 |
-| 4 | `agent-process.js`: spawn + 줄 파싱 → IPC | 창에 이벤트 흐름 |
-| 5 | `renderer.js`: 입력창 + 로그 + 프로바이더 드롭다운 | 창에서 질문 → 실시간 표시 |
+| 3 | Vite + React 셋업 (`npm create`, `vite.config.js`, `src/main.jsx`) | `npm run dev` → 브라우저에 React 화면 |
+| 4 | `main.js`: 창 생성 + dev/prod 로드 분기 | `npm start` → Electron 창에 React 화면 |
+| 5 | `preload.js` + `agent-process.js`: spawn + 줄 파싱 → IPC | 창 콘솔에 이벤트 JSON 도착 |
+| 6 | `App.jsx`: 입력창 + 이벤트 로그 + 토큰 + 프로바이더 드롭다운 | 창에서 질문 → 실시간 표시 |
+| 7 | framer-motion 애니메이션 + UI UX Pro Max 디자인 적용 | 로그 항목 등장 애니메이션, 팔레트/타이포 |
 
-1·2번은 Electron 없이 터미널만으로 검증된다. 거기까지면 나머지는 JS 배관.
+1·2번은 Electron 없이 터미널만으로 검증된다. 3·4번은 파이썬 없이 검증된다.
+양쪽이 각각 서는 걸 확인한 뒤 5번에서 붙인다.
 
 ### 함정
 
@@ -329,17 +336,31 @@ Electron (JS)  ──spawn──▶  python -m ui.backend.run
 | 버퍼링 지연 | `print(..., flush=True)` 또는 `python -u` |
 | 경로/venv | spawn 시 `.venv/bin/python` 절대경로 + cwd=레포 루트 명시 |
 
-### 디자인 방침 (조사 결과 2026-07-27)
+### 렌더러 스택 / 디자인 (결정 2026-07-27 → D15)
 
-| 도구 | 성격 | 결론 |
+**렌더러 = React + Vite + framer-motion** (사용자 결정).
+
+Electron 렌더러는 Chromium이라 React가 그대로 돈다. 막는 건 Electron이 아니라 번들러 부재였고,
+Vite를 넣으면 해결된다. 프로세스 경계(stdio) 덕에 파이썬·main.js·preload.js는 스택과 무관하다.
+
+| 도구 | 버전/라이선스 | 역할 |
 | --- | --- | --- |
-| **UI UX Pro Max** (Claude Code 스킬) | 디자인 DB — 스타일 84·팔레트 192·폰트 74·UX 가이드 98, HTML/CSS 스택 지원 | **채택**. 설치형 스킬이라 프로젝트 의존성 0. 디자인 근거로만 사용 |
-| **framer-motion** 12.42.2 (MIT) | `peerDependencies: react ^18\|\|^19` — **React 전용** | **보류**. vanilla 렌더러에 React를 끌어오는 건 MVP 과잉 |
-| **motion** 12.42.2 (MIT) | 같은 팀의 vanilla `animate()` DOM API, `motion/mini` ≈2.6KB | 예비. CSS로 부족할 때만 ESM 파일 1개 복사 |
+| **React + ReactDOM** | 18/19 | 렌더러 UI |
+| **Vite** (+`@vitejs/plugin-react`) | - | JSX 변환, dev 서버(HMR), 프로덕션 빌드 |
+| **framer-motion** | 12.42.2 / MIT | 애니메이션. `<motion.div layout>` 등 |
+| **UI UX Pro Max** (Claude Code 스킬) | - | 디자인 DB(스타일 84·팔레트 192·폰트 74·UX 가이드 98). 설치형이라 **프로젝트 의존성 0** |
 
-- **MVP는 CSS만**(`transition`, `@keyframes`). Electron 렌더러는 번들러 없이 npm 패키지를 import 못 하므로 CSS로 가면 그 문제 자체가 없다.
-- 나중에 React+Vite로 갈아탈 때 framer-motion 재검토.
+- 대안으로 검토한 **motion**(vanilla `animate()`, MIT)은 React를 안 쓸 때의 선택지였으므로 미채택.
 - UI UX Pro Max 설치: `/plugin marketplace add nextlevelbuilder/ui-ux-pro-max-skill` → `/plugin install ui-ux-pro-max@ui-ux-pro-max-skill`
+
+**Electron이 화면을 로드하는 경로가 개발/배포에서 다름** — 여기가 유일한 배선 포인트:
+
+```
+개발:  main.js → loadURL("http://localhost:5173")   ← Vite dev 서버 (HMR)
+배포:  main.js → loadFile("dist/index.html")        ← vite build 결과물
+```
+
+`app.isPackaged` 또는 `NODE_ENV`로 분기한다.
 
 ### 스코프 (MVP 고정)
 
@@ -349,7 +370,14 @@ Electron (JS)  ──spawn──▶  python -m ui.backend.run
 
 ### 사전 준비
 
-Node.js (`node -v`, 없으면 `brew install node`) → `ui/desktop/`에서 `npm install electron --save-dev`
+Node.js (`node -v`, 없으면 `brew install node`). `ui/desktop/`에서:
+
+```bash
+npm install --save-dev electron vite @vitejs/plugin-react
+npm install react react-dom framer-motion
+```
+
+`.gitignore`에 `node_modules/`, `ui/desktop/dist/` 추가 필요.
 
 ---
 
