@@ -2,9 +2,9 @@
 memoc: true
 type: wiki
 scope: project-memory
-version: 0.2.1
+version: 0.3.0
 created: 2026-07-23
-updated: 2026-07-25
+updated: 2026-07-27
 status: active
 confidence: high
 tags:
@@ -18,7 +18,7 @@ tags:
 ---
 # AI Unreal Tester — 개발 플랜
 
-> Version 0.2.1 · 2026-07-25
+> Version 0.3.0 · 2026-07-27
 
 ## 최종 목표
 
@@ -70,7 +70,7 @@ tags:
 │  agent_loop.py   ← tool_use/tool_result 루프 직접    │
 │  bridge_client.py← 언리얼로 명령 (자체 프로토콜)      │
 │  knowledge/, scenarios/, reports/                    │
-│  (UI: CLI → Streamlit)                               │
+│  (UI: Electron 데스크탑 ← stdio JSON, D9)             │
 └──────────────────┬───────────────────────────────── ┘
                    │ 자체 JSON 프로토콜 → (나중) MCP
 ┌──────────────────┴──── 언리얼 5.8 (C++ 자작) ─────── ┐
@@ -89,12 +89,11 @@ tags:
 ```
 ai_unreal_tester/
 ├── .venv/                          # Python 3.12.13 (gitignore)
+├── .env / .env.example             # API 키 — 레포 루트 공용 (.env는 gitignore)
 │
 ├── agent/                          # 파이썬 뇌
 │   ├── __init__.py             ★
-│   ├── hello.py                    # Phase 0 기념비 (보존)
 │   ├── requirements.txt            # requests + python-dotenv 만
-│   ├── .env / .env.example         # API 키 (.env는 gitignore)
 │   │
 │   ├── llm/                        # [입] 프로바이더 — 누구에게 묻나
 │   │   ├── __init__.py         ★
@@ -108,7 +107,8 @@ ai_unreal_tester/
 │   │   ├── base.py             ★   Tool 규약(name/description/schema/run)
 │   │   ├── builtin/                게임 무관 기본 도구
 │   │   │   ├── __init__.py     ★
-│   │   │   └── time_tool.py    ★   get_time (Phase 1 학습용)
+│   │   │   ├── time_tool.py    ★   get_time (인자 없는 도구)
+│   │   │   └── math_tool.py    ★   add_numbers (인자 있는 도구 = 게임 도구와 같은 모양)
 │   │   └── game/                   게임 도구 (Phase 3+)
 │   │       ├── __init__.py     ★   (빈 껍데기)
 │   │       ├── state.py            get_game_state
@@ -162,8 +162,8 @@ ai_unreal_tester/
 | 경로 | 지금 상태 | 채우는 시점 |
 | --- | --- | --- |
 | `mcp/README.md` | 한 줄 메모: `Phase 10: 자체 프로토콜 → MCP 재구현` | Phase 10 |
-| `ui/desktop/*` | 뼈대+주석만 (JS 빈 구현) | 데스크탑 UI 붙일 때 (D9) |
-| `ui/backend/run.py` | 주석만 | Phase 1 후반 (loop→JSON stdout 어댑터) |
+| `ui/desktop/*` | 뼈대+주석만 (JS 빈 구현) | **#2 Electron MVP** |
+| `ui/backend/run.py` | 동작 중 (`cli_print`로 터미널 출력) | #2 1~2단계에서 JSON stdout + stdin 루프 추가 |
 | `agent/tools/game/` | `__init__.py`만 (빈 껍데기) | Phase 3~7, 도구별 파일 추가 |
 | `agent/bridge/client.py` | 없음 | Phase 2 (언리얼 소켓 붙일 때) |
 | `agent/loop/session.py` | 없음 | Phase 1 후반 (토큰 누적/대화기록) |
@@ -269,6 +269,90 @@ import은 항상 루트부터 절대경로: `from agent.llm.claude import Claude
 | `TypeError: string indices` | `data["content"]`는 항상 블록 배열. `text`+`tool_use`가 같이 옴 |
 | 크레딧 순삭 | `max_turns` 안 걸음 (기본 10) |
 
+---
+
+## #2 — Electron MVP (Phase 1 완료 후, Phase 2 이전)
+
+**목표**: 터미널 대신 창에서 질문하고, 도구 사용 과정을 실시간으로 본다.
+
+### 왜 프로세스를 나누나
+
+Electron = JavaScript, 에이전트 = Python → 직접 import 불가. 텍스트 줄로만 대화한다.
+
+```
+Electron (JS)  ──spawn──▶  python -m ui.backend.run
+     ▲                            │
+     └──── stdout: JSON 한 줄 ────┘
+        stdin: 질문 한 줄 ───────▶
+```
+
+### 통신 규약
+
+**Python → Electron** (stdout, 한 줄 = JSON 1개). `agent/loop/events.py` dataclass를 그대로 직렬화:
+
+```json
+{"type":"TurnStart","turn":1,"stop_reason":"tool_use"}
+{"type":"ToolCall","name":"get_time","input":{}}
+{"type":"ToolResult","name":"get_time","output":"...","is_error":false}
+{"type":"FinalText","text":"지금 오후 1시 20분입니다."}
+{"type":"Usage","input_tokens":1474,"output_tokens":110}
+```
+
+- 한 줄에 JSON 하나(`\n` 구분) · `type` = 파이썬 클래스명(JS가 분기) · **stdout엔 JSON만**(디버그는 stderr)
+
+**Electron → Python** (stdin, 한 줄 = 요청 1개):
+
+```json
+{"type":"ask","question":"지금 몇시야?","provider":"claude"}
+```
+
+→ `run.py`가 argv 1회성에서 stdin 대기 루프로 바뀜(창을 닫지 않고 계속 질문).
+
+### 작업 순서
+
+| # | 무엇 | 검증 |
+| - | --- | --- |
+| 1 | `run.py`: `json_print` 추가 (`cli_print` 유지) | `--json` 실행 → JSON 줄만 출력 |
+| 2 | `run.py`: stdin 루프 | 터미널에 JSON 붙여넣기 → 응답 |
+| 3 | `main.js` + `index.html`: 창 띄우기 | `npm start` → 빈 창 |
+| 4 | `agent-process.js`: spawn + 줄 파싱 → IPC | 창에 이벤트 흐름 |
+| 5 | `renderer.js`: 입력창 + 로그 + 프로바이더 드롭다운 | 창에서 질문 → 실시간 표시 |
+
+1·2번은 Electron 없이 터미널만으로 검증된다. 거기까지면 나머지는 JS 배관.
+
+### 함정
+
+| 함정 | 대응 |
+| --- | --- |
+| stdout 오염 | 디버그 출력은 전부 `file=sys.stderr` |
+| 줄 쪼개짐 | stdout이 청크로 도착 → JS에서 버퍼 쌓고 `\n` 기준으로만 파싱 |
+| 버퍼링 지연 | `print(..., flush=True)` 또는 `python -u` |
+| 경로/venv | spawn 시 `.venv/bin/python` 절대경로 + cwd=레포 루트 명시 |
+
+### 디자인 방침 (조사 결과 2026-07-27)
+
+| 도구 | 성격 | 결론 |
+| --- | --- | --- |
+| **UI UX Pro Max** (Claude Code 스킬) | 디자인 DB — 스타일 84·팔레트 192·폰트 74·UX 가이드 98, HTML/CSS 스택 지원 | **채택**. 설치형 스킬이라 프로젝트 의존성 0. 디자인 근거로만 사용 |
+| **framer-motion** 12.42.2 (MIT) | `peerDependencies: react ^18\|\|^19` — **React 전용** | **보류**. vanilla 렌더러에 React를 끌어오는 건 MVP 과잉 |
+| **motion** 12.42.2 (MIT) | 같은 팀의 vanilla `animate()` DOM API, `motion/mini` ≈2.6KB | 예비. CSS로 부족할 때만 ESM 파일 1개 복사 |
+
+- **MVP는 CSS만**(`transition`, `@keyframes`). Electron 렌더러는 번들러 없이 npm 패키지를 import 못 하므로 CSS로 가면 그 문제 자체가 없다.
+- 나중에 React+Vite로 갈아탈 때 framer-motion 재검토.
+- UI UX Pro Max 설치: `/plugin marketplace add nextlevelbuilder/ui-ux-pro-max-skill` → `/plugin install ui-ux-pro-max@ui-ux-pro-max-skill`
+
+### 스코프 (MVP 고정)
+
+- **넣음**: 질문 입력, 이벤트 로그, 토큰 표시, 프로바이더 드롭다운
+- **뺌**: 대화 히스토리 저장, 설정 화면, 패키징(.app), 자동 업데이트, 정교한 디자인
+- 폼은 진짜 게임 데이터가 나온 뒤에 잡는다. 지금은 흐름만 보이면 된다.
+
+### 사전 준비
+
+Node.js (`node -v`, 없으면 `brew install node`) → `ui/desktop/`에서 `npm install electron --save-dev`
+
+---
+
 ### 상태 JSON 예시
 
 ```json
@@ -358,8 +442,12 @@ Phase 10 MCP 자작            ──────►  L2  MCP 표준화 ★
 
 ## 진행 상황
 
-- ✅ **Phase 0 완료** (2026-07-24): `agent/hello.py` 생 HTTP로 Claude 호출 성공. requests+dotenv, 응답/토큰/stop_reason 파싱.
-- ▶ **Phase 1 다음**: Tool Use 루프 (가짜 로컬 도구 `get_time`으로 Claude 상대). `stop_reason=="tool_use"` 감지 → 실행 → tool_result 재주입 → 반복.
+- ✅ **Phase 0 완료** (2026-07-24): 생 HTTP로 Claude 호출. requests+dotenv, 응답/토큰/stop_reason 파싱. (`hello.py`는 구조 분리 후 제거)
+- ✅ **Phase 1 완료** (2026-07-25): Tool Use 루프 자작. `get_time`/`add_numbers`로 단일·병렬 도구 호출 확인. 구조 분리 완료(`agent/llm·tools·loop·bridge`, `ui/backend·desktop`).
+- ✅ **#1 멀티프로바이더 완료** (2026-07-25): `agent/llm`에 Claude/OpenAI/DeepSeek + `LLMResponse` 정규화. 루프는 프로바이더 무관.
+- ✅ **환경 정리** (2026-07-27): Python 3.12.13 단일 venv, `.env`를 레포 루트로 통일, 3.9 잔재 venv 제거.
+- ▶ **#2 Electron MVP 진행 예정**: 위 "#2 — Electron MVP" 섹션 참조. 1단계(`run.py` JSON 출력)부터.
+- ⏳ **#3 Phase 2 언리얼**: `ai_agent_test/` 생성 + AITesterBridge 플러그인 + ping/pong.
 
 ## 참고 프로젝트 (베끼지 말고 읽기)
 
