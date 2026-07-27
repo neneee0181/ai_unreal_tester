@@ -6,8 +6,9 @@
 .agents/
 
 # Python 가상환경 (위치 무관하게 무시)
-.venv/
-venv/
+# .venv-1 같은 재생성 잔재까지 잡으려고 * 사용
+.venv*/
+venv*/
 env/
 
 # Python 캐시/빌드

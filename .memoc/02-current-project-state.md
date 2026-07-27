@@ -42,7 +42,6 @@ _See Project Snapshot below. Keep only current human-written status notes here._
 
 - **#2 Electron MVP** — `ui/backend/run.py` JSON 이벤트 stdout + stdin 질문 수신, `ui/desktop/*` spawn/IPC 구현, 프로바이더 드롭다운.
 - **#3 Phase 2 언리얼** — `ai_agent_test/` 프로젝트 생성, AITesterBridge 플러그인, Python↔언리얼 ping/pong.
-- 잡일: `.venv-1/` 삭제.
 
 ## Completed Tasks
 
@@ -60,7 +59,7 @@ python -m pip install -r agent/requirements.txt      # 의존성
 sh .memoc/bin/memoc lint-wiki                        # 위키 검사
 ```
 
-⚠️ `.venv-1/`(Python 3.9)은 잔재 — 삭제 대상. `.venv/`만 사용.
+`.venv-1/`(Python 3.9 잔재) 삭제 완료(2026-07-27). gitignore는 `.venv*/`로 확장.
 
 ## Notes
 
