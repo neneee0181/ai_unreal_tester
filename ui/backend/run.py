@@ -20,6 +20,8 @@ from agent.llm import get_provider
 from agent.loop.agent_loop import run
 from agent.loop import events
 
+from agent.print import json_print
+
 # .env 는 레포 루트(프로젝트 공용 설정). 어디서 실행해도 찾도록 경로 명시.
 #   ui/backend/run.py → parents[2] = 레포 루트
 load_dotenv(Path(__file__).resolve().parents[2] / ".env")
@@ -44,16 +46,35 @@ def cli_print(event) -> None:
 
 
 def main() -> None:
-    if len(sys.argv) < 2:
-        print('사용법 : python -m ui.backend.run "claude에게 보낼 질문"')
-        sys.exit(1)
+    args = sys.argv[1:]
 
+    use_json = "--json" in args
+
+    if use_json:
+        args.remove("--json")
+
+
+    if not args:
+        print(
+            '사용법 : python -m ui.backend.run [--json] "질문"',
+              file=sys.stderr
+        )
+        sys.exit(1)
+   
     # 프로바이더 이름 — 나중에 Electron 이 이 값을 보낸다.
     # 개발 중엔 LLM_PROVIDER 환경변수로 전환: claude(기본) / openai / deepseek
     name = os.environ.get("LLM_PROVIDER", "claude")
     provider = get_provider(name)
 
-    run(" ".join(sys.argv[1:]), provider, on_event=cli_print)
+    question = " ".join(args)
+
+    event_printer = json_print if use_json else cli_print
+
+    run(
+        question=question,
+        provider=provider,
+        on_event=event_printer
+    )
 
 
 if __name__ == "__main__":
