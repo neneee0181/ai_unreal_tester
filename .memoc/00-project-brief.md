@@ -2,8 +2,8 @@
 memoc: true
 type: core
 scope: project-memory
-created: 2026-07-25T13:29:01
-updated: 2026-07-25T13:29:01
+created: 2026-07-27T04:19:12
+updated: 2026-07-27T04:19:12
 status: active
 tags:
   - memoc
@@ -25,6 +25,8 @@ This is the shortest project summary for a fresh agent. Keep it factual and easy
 학습 겸용 **언리얼 게임 테스트용 AI 에이전트**. 외부 Python 에이전트가 관찰(로그+스샷)→판단(LLM)→행동→검증 닫힌 루프로 게임 자율 테스트. 라이브러리 0개 자작으로 원리 학습 후 프레임워크(LangGraph/MCP/RAG) 레이어로 재구현=취업. 전체 플랜: `.memoc/wiki/project/plan.md` (v0.2.1).
 
 진행 순서(사용자 결정): **#1 멀티프로바이더(완료) → #2 Electron MVP → #3 Phase 2 언리얼**. UI/UX는 병행하되 MVP만, 폼은 진짜 게임 데이터 위에서.
+
+⚠️ `memoc update`는 이 섹션과 아래 Next Useful Work를 `_Not set yet._`으로 덮어씀. update 후 반드시 복구할 것(2회 발생).
 
 ## How To Approach
 

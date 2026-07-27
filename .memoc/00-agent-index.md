@@ -2,8 +2,8 @@
 memoc: true
 type: core
 scope: project-memory
-created: 2026-07-25T13:29:01
-updated: 2026-07-25T13:29:01
+created: 2026-07-27T04:19:12
+updated: 2026-07-27T04:19:12
 status: active
 tags:
   - memoc
@@ -22,12 +22,19 @@ This is the fast entry map for agents. Start here, then open only the docs relev
 ## Project Snapshot
 
 <!-- memoc:snapshot:start -->
-- Last synced: 2026-07-25T13:29:00
+- Last synced: 2026-07-27T04:19:12
 - Detected stack: Not detected
+
+### Config Files
+
+- `.env.example`
 
 ### Source Directories
 
+- `.agents`
 - `.claude`
+- `.venv`
+- `.venv-1`
 - `agent`
 - `mcp`
 - `ui`
