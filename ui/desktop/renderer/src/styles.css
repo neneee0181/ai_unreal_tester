@@ -1,0 +1,81 @@
+/* styles.css — 화면 꾸미기. 단순·다크 테마.
+   레이아웃 핵심: 세로 3단(헤더 / 로그 / 입력줄). 로그만 늘어나고 스크롤. */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, "Segoe UI", sans-serif;
+  background: #0f172a;   /* 남색 배경 */
+  color: #e2e8f0;
+}
+
+/* 앱 전체 = 화면 높이 꽉 채우는 세로 flex */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 16px;
+  gap: 12px;
+}
+
+/* 헤더: 제목 왼쪽, 드롭다운 오른쪽 */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header h1 { font-size: 18px; margin: 0; }
+
+select, input, button {
+  font: inherit;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 8px 10px;
+}
+
+/* 로그: 남는 공간 전부 차지(flex:1) + 넘치면 스크롤 */
+.log {
+  flex: 1;
+  overflow-y: auto;
+  background: #111827;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 이벤트 한 줄: [배지] [내용] */
+.event {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #1e293b;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+.badge {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.event-text { white-space: pre-wrap; word-break: break-word; }
+
+.thinking { color: #94a3b8; font-size: 14px; padding: 4px; }
+
+/* 입력줄: 입력창이 늘어나고 버튼은 고정 */
+.input-row { display: flex; gap: 8px; }
+.input-row input { flex: 1; }
+.input-row button {
+  background: #6366f1;
+  border-color: #6366f1;
+  cursor: pointer;
+  font-weight: 600;
+}
+button:disabled, input:disabled, select:disabled { opacity: 0.5; cursor: not-allowed; }

@@ -1,10 +1,28 @@
 {
   "name": "ai-unreal-tester-desktop",
   "version": "0.1.0",
-  "description": "Electron desktop UI for the AI Unreal Tester agent (spawns the Python agent via ui.backend.run).",
+  "description": "Electron desktop UI for the AI Unreal Tester agent (React + Vite + framer-motion). Spawns the Python agent via ui.backend.run --json.",
   "main": "main/main.js",
   "scripts": {
-    "start": "electron ."
+    "//": "dev = Vite 개발서버 + Electron 동시 실행. concurrently 로 둘을 함께, -k 는 하나 죽으면 같이 종료.",
+    "dev:vite": "vite",
+    "dev:electron": "wait-on tcp:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .",
+    "dev": "concurrently -k \"npm:dev:vite\" \"npm:dev:electron\"",
+    "//build": "화면(React) 을 dist 로 빌드 후 Electron 실행 (배포 흉내)",
+    "build": "vite build",
+    "start": "npm run build && electron ."
   },
-  "devDependencies": {}
+  "dependencies": {
+    "framer-motion": "^11.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "concurrently": "^9.0.0",
+    "cross-env": "^7.0.3",
+    "electron": "^31.0.0",
+    "vite": "^5.4.0",
+    "wait-on": "^8.0.0"
+  }
 }

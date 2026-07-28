@@ -2,26 +2,26 @@
 memoc: true
 type: state
 scope: project-memory
-created: 2026-07-27T04:19:12
-updated: 2026-07-27T04:19:12
+created: 2026-07-25T13:28:49
+updated: 2026-07-28
 status: active
 tags:
   - memoc
   - memoc/state
 ---
 # Session Summary
-Last: 2026-07-27T04:19:12
+Last: 2026-07-28
 Replace, do not append. Keep <800B.
 History: worklog. Resume risks: 04-handoff.md.
 
 ## Status
-- Phase 1 완료 + #1 멀티프로바이더 완료. 구조 분리 끝(agent/llm·tools·loop·bridge, ui/backend·desktop). 트리 클린.
+#2 Electron MVP 완료 + 실행 검증. 스택 React+Vite+framer-motion(D15). tool use 루프가 UI 끝까지 관통.
 
 ## Changed
-- 코드 변경 없음. memoc만 갱신(update가 지운 brief 복구, D4/D9 개정 + D11~D14 반영).
+run.py=--json 상주서버(stdin 질문/stdout 이벤트). 포맷터 ui/backend/print.py(cli_print+json_print) 분리. main/preload/agent-process.js, src/App.jsx(framer-motion)+main+styles, vite.config. Windows UTF-8 stdio 고정. 한글 학습주석.
 
 ## Open Tasks
-- #2 Electron MVP → #3 Phase 2 언리얼 브릿지.
+Phase 2 언리얼 브릿지: ai_agent_test/ 생성 + AITesterBridge 플러그인 + ping/pong.
 
 ## Resume
-- `wiki/project/plan.md` v0.2.1. 실행 `python -m ui.backend.run "..."`. 라이브러리 0개 유지.
+`wiki/project/plan.md` v0.4.0. 백엔드=`python -m ui.backend.run "..."`, UI=`cd ui/desktop && npm run dev`.

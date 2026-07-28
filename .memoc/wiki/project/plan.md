@@ -474,7 +474,7 @@ Phase 10 MCP 자작            ──────►  L2  MCP 표준화 ★
 - ✅ **Phase 1 완료** (2026-07-25): Tool Use 루프 자작. `get_time`/`add_numbers`로 단일·병렬 도구 호출 확인. 구조 분리 완료(`agent/llm·tools·loop·bridge`, `ui/backend·desktop`).
 - ✅ **#1 멀티프로바이더 완료** (2026-07-25): `agent/llm`에 Claude/OpenAI/DeepSeek + `LLMResponse` 정규화. 루프는 프로바이더 무관.
 - ✅ **환경 정리** (2026-07-27): Python 3.12.13 단일 venv, `.env`를 레포 루트로 통일, 3.9 잔재 venv 제거.
-- ▶ **#2 Electron MVP 진행 예정**: 위 "#2 — Electron MVP" 섹션 참조. 1단계(`run.py` JSON 출력)부터.
+- ✅ **#2 Electron MVP 완료** (2026-07-28): 렌더러 React+Vite+framer-motion(D15). `run.py` `--json` 상주 서버(stdin=질문 JSON, stdout=이벤트 JSON), 출력 포맷터는 `ui/backend/print.py`(cli_print/json_print) 분리. `main/`(main·preload·agent-process), `src/`(App·main·styles), 프로바이더 드롭다운. Windows UTF-8 stdio 고정. `"지금 몇시야?"` → tool use 루프 전체 화면 관통 확인.
 - ⏳ **#3 Phase 2 언리얼**: `ai_agent_test/` 생성 + AITesterBridge 플러그인 + ping/pong.
 
 ## 참고 프로젝트 (베끼지 말고 읽기)

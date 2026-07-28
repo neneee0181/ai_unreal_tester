@@ -27,7 +27,7 @@ __pycache__/
 
 # Node / Electron 렌더러 (D15)
 node_modules/
-ui/desktop/dist/
+ui/desktop/renderer/dist/
 npm-debug.log*
 
 # OS / 에디터
